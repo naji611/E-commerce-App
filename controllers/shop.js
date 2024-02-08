@@ -7,6 +7,7 @@ exports.getCart = (req, res) => {
     .populate("cart.items.productId")
 
     .then((user) => {
+      console.log(user);
       const products = user.cart.items;
       res.render("shop/cart", {
         path: "/cart",

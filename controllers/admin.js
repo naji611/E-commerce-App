@@ -93,6 +93,7 @@ exports.deleteProduct = (req, res) => {
   const prodId = req.body.productId;
   Product.findByIdAndDelete(prodId)
     .then((product) => {
+      req.user.clearUserCart(prodId);
       console.log("delete success");
     })
     .then((results) => {
