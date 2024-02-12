@@ -5,6 +5,7 @@ exports.getAddProducts = (req, res, next) => {
     pageTitle: "Add Product",
     path: "/admin/add-product",
     editing: false,
+    isAuthenticated: req.session.isLoggedIn,
   });
 };
 
@@ -18,7 +19,7 @@ exports.postAddProducts = (req, res) => {
     price: price,
     description: description,
     imageUrl: imageUrl,
-    userId: req.user, // you can also use req.user._id but req.user it ok
+    userId: req.user,
   });
 
   product
@@ -69,6 +70,7 @@ exports.getEditProducts = (req, res, next) => {
         path: "/admin/edit-product",
         product: product,
         editing: true,
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => {
@@ -83,6 +85,7 @@ exports.getProducts = (req, res) => {
         prods: products,
         pageTitle: "Admin Products",
         path: "/admin/products",
+        isAuthenticated: req.session.isLoggedIn,
       });
     })
     .catch((err) => {
@@ -93,7 +96,7 @@ exports.deleteProduct = (req, res) => {
   const prodId = req.body.productId;
   Product.findByIdAndDelete(prodId)
     .then((product) => {
-      req.user.clearUserCart(prodId);
+      // req.user.clearUserCart(prodId);
       console.log("delete success");
     })
     .then((results) => {

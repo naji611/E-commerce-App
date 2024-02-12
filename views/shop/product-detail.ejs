@@ -1,14 +1,19 @@
+
 <%- include('../includes/head.ejs') %>
-    </head>
+<link rel="stylesheet" href="/css/product.css" />
+</head>
 
     <body>
         <%- include('../includes/navigation.ejs') %>
 <main class="center">
+    <article class="card product-item">
 <h1> <%= product.title %></h1>
 <hr>
 <img src="<%=product.imageUrl%>">
 <h3> <%=product.description%></h3>
 <h2>price:<%=product.price%></h2>
-<%- include('../includes/add-to-cart.ejs') %>
+
+    <%- include('../includes/add-to-cart.ejs',{product,product}) %>
+    <article class="card product-item">
 </main>
         <%- include('../includes/end.ejs') %>
