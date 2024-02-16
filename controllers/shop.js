@@ -1,5 +1,6 @@
 const Product = require("../models/Product");
 const Order = require("../models/order");
+const isAuth = require("../middleware/is-auth");
 
 exports.getCart = (req, res, next) => {
   req.user
@@ -65,7 +66,7 @@ exports.postOrders = (req, res) => {
       });
       const order = new Order({
         user: {
-          username: req.user.username,
+          email: req.user.email,
           userId: req.user,
         },
         products: products,
