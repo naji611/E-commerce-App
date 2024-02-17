@@ -65,6 +65,9 @@ exports.getEditProducts = (req, res, next) => {
       if (!product) {
         return res.redirect("/");
       }
+      if (product.userId.toString() !== req.user._id.toString()) {
+        res.redirect("/");
+      }
       res.render("admin/edit-product", {
         pageTitle: "Edit Product",
         path: "/admin/edit-product",
@@ -79,7 +82,7 @@ exports.getEditProducts = (req, res, next) => {
 };
 
 exports.getProducts = (req, res) => {
-  Product.find()
+  Product.find({ userId: req.user._id })
     .then((products) => {
       res.render("admin/products", {
         prods: products,
@@ -94,7 +97,7 @@ exports.getProducts = (req, res) => {
 };
 exports.deleteProduct = (req, res) => {
   const prodId = req.body.productId;
-  Product.findByIdAndDelete(prodId)
+  Product.deleteOne({ _id: prodId, userId: req.user._id })
     .then((product) => {
       // req.user.clearUserCart(prodId);
       console.log("delete success");
