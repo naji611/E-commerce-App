@@ -2,6 +2,7 @@ const User = require("../models/user");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
+const { validationResult } = require("express-validator");
 
 var transporter = nodemailer.createTransport({
   service: "gmail",
@@ -20,18 +21,34 @@ exports.getLogin = (req, res, next) => {
     path: "/login",
     pageTitle: "Login",
     errorMessage: message,
+    oldInput: {
+      email: "",
+      password: "",
+    },
+    validationError: [],
   });
 };
 
 exports.postLogin = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
-  User.findOne({ email: email }).then((user) => {
-    if (!user) {
-      req.flash("error", "Invalid Email or Password.");
-      return res.redirect("/login");
-    }
 
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors.array());
+    return res.status(422).render("auth/login", {
+      path: "/login",
+      pageTitle: "login",
+      isAuthenticated: false,
+      errorMessage: errors.array()[0].msg,
+      oldInput: {
+        email: email,
+        password: password,
+      },
+      validationError: errors.array(),
+    });
+  }
+  User.findOne({ email: email }).then((user) => {
     bcrypt.compare(password, user.password).then((doMatch) => {
       if (doMatch) {
         req.session.user = user;
@@ -41,8 +58,20 @@ exports.postLogin = (req, res, next) => {
           res.redirect("/");
         });
       }
-      req.flash("error", "Invalid  Password.");
-      res.redirect("/login");
+
+      req.flash("error", "Invalid username or password");
+      console.log(errors.array());
+      return res.status(422).render("auth/login", {
+        path: "/login",
+        pageTitle: "login",
+        isAuthenticated: false,
+        errorMessage: "Invalid Password",
+        oldInput: {
+          email: email,
+          password: password,
+        },
+        validationError: [{ path: "password" }],
+      });
     });
   });
 };
@@ -64,6 +93,12 @@ exports.getSignUp = (req, res, next) => {
     pageTitle: "SignUp",
     isAuthenticated: false,
     errorMessage: message,
+    oldInput: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    validationError: [],
   });
 };
 
@@ -71,18 +106,28 @@ exports.postSignUp = (req, res, next) => {
   const email = req.body.email;
   const password = req.body.password;
   const confirmPassword = req.body.confirmPassword;
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    console.log(errors.array());
+    return res.status(422).render("auth/signup", {
+      path: "/signup",
+      pageTitle: "SignUp",
+      isAuthenticated: false,
+      errorMessage: errors.array()[0].msg,
+      oldInput: {
+        email: email,
+        password: password,
+        confirmPassword: confirmPassword,
+      },
+      validationError: errors.array(),
+    });
+  }
 
-  User.findOne({ email: email }).then((userDoc) => {
-    if (userDoc) {
-      req.flash("error", "Email Is Already Exists.");
-      return res.redirect("/signup");
-    }
-
-    var mailOptions = {
-      from: "koonohashop@gmail.com",
-      to: email,
-      subject: "Welcome to Koonoha Shop!",
-      html: `
+  var mailOptions = {
+    from: "koonohashop@gmail.com",
+    to: email,
+    subject: "Welcome to Koonoha Shop!",
+    html: `
         <p>Dear Customer,</p>
         <p>Welcome to Koonoha Shop! We are thrilled to have you as a new member of our community. As you embark on this journey with us, expect nothing but the best in terms of products, service, and overall experience.</p>
         <p><img src="https://drive.google.com/uc?export=download&id=1-YgkDu3oNGL4s3jmeUBBkS5EhvN0pCLD" alt="Welcome Image" style="max-width: 100%; height: auto;"></p>
@@ -90,30 +135,29 @@ exports.postSignUp = (req, res, next) => {
         <p>Once again, welcome aboard!</p>
         <p>Best regards,<br>The Koonoha Shop Team</p>
       `,
-    };
+  };
 
-    transporter.sendMail(mailOptions, function (error, info) {
-      if (error) {
-        console.log(error);
-      } else {
-        console.log("Email sent: " + info.response);
-      }
-    });
-    return bcrypt
-      .hash(password, 12)
-      .then((hashedPass) => {
-        const user = new User({
-          email: email,
-          password: hashedPass,
-          cart: { items: [] },
-        });
-        return user.save();
-      })
-      .then(() => {
-        res.redirect("/login");
-      })
-      .catch((err) => console.log(err));
+  transporter.sendMail(mailOptions, function (error, info) {
+    if (error) {
+      console.log(error);
+    } else {
+      console.log("Email sent: " + info.response);
+    }
   });
+  return bcrypt
+    .hash(password, 12)
+    .then((hashedPass) => {
+      const user = new User({
+        email: email,
+        password: hashedPass,
+        cart: { items: [] },
+      });
+      return user.save();
+    })
+    .then(() => {
+      res.redirect("/login");
+    })
+    .catch((err) => console.log(err));
 };
 exports.getReset = (req, res, next) => {
   let message = req.flash("error");
