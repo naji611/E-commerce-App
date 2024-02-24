@@ -48,32 +48,44 @@ exports.postLogin = (req, res, next) => {
       validationError: errors.array(),
     });
   }
-  User.findOne({ email: email }).then((user) => {
-    bcrypt.compare(password, user.password).then((doMatch) => {
-      if (doMatch) {
-        req.session.user = user;
-        req.session.isLoggedIn = true;
-        return req.session.save((err) => {
-          console.log(err);
-          res.redirect("/");
-        });
-      }
+  User.findOne({ email: email })
+    .then((user) => {
+      bcrypt
+        .compare(password, user.password)
+        .then((doMatch) => {
+          if (doMatch) {
+            req.session.user = user;
+            req.session.isLoggedIn = true;
+            return req.session.save((err) => {
+              console.log(err);
+              res.redirect("/");
+            });
+          }
 
-      req.flash("error", "Invalid username or password");
-      console.log(errors.array());
-      return res.status(422).render("auth/login", {
-        path: "/login",
-        pageTitle: "login",
-        isAuthenticated: false,
-        errorMessage: "Invalid Password",
-        oldInput: {
-          email: email,
-          password: password,
-        },
-        validationError: [{ path: "password" }],
-      });
+          req.flash("error", "Invalid username or password");
+          console.log(errors.array());
+          return res.status(422).render("auth/login", {
+            path: "/login",
+            pageTitle: "login",
+            isAuthenticated: false,
+            errorMessage: "Invalid Password",
+            oldInput: {
+              email: email,
+              password: password,
+            },
+            validationError: [{ path: "password" }],
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          res.redirect("/login");
+        });
+    })
+    .catch((err) => {
+      const error = new Error(err);
+      error.httpStatusCode = 500;
+      return next(error);
     });
-  });
 };
 
 exports.postLogout = (req, res, next) => {
@@ -157,7 +169,10 @@ exports.postSignUp = (req, res, next) => {
     .then(() => {
       res.redirect("/login");
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.log(err);
+      res.redirect("/login");
+    });
 };
 exports.getReset = (req, res, next) => {
   let message = req.flash("error");
@@ -203,13 +218,17 @@ exports.postReset = (req, res, next) => {
         };
         transporter.sendMail(mailOptions, function (error, info) {
           if (error) {
-            console.log(error);
+            console.log(err);
+            res.redirect("/login");
           } else {
             console.log("Email sent: " + info.response);
           }
         });
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        res.redirect("/login");
+      });
   });
 };
 exports.getUpdatePassword = (req, res, next) => {
@@ -231,7 +250,10 @@ exports.getUpdatePassword = (req, res, next) => {
         passwordToken: token,
       });
     })
-    .catch((err) => console.log(err));
+    .catch((err) => {
+      console.log(err);
+      res.redirect("/login");
+    });
 };
 exports.postNewPassword = (req, res, next) => {
   let resetUser;
@@ -256,6 +278,9 @@ exports.postNewPassword = (req, res, next) => {
       .then((result) => {
         res.redirect("/login");
       })
-      .catch((err) => console.log(err));
+      .catch((err) => {
+        console.log(err);
+        res.redirect("/login");
+      });
   });
 };

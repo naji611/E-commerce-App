@@ -17,11 +17,10 @@ router.post(
       .trim(),
     check("description", "please add a valid description.")
       .isLength({ min: 5, max: 400 })
-      .isAlphanumeric()
+
       .notEmpty()
       .trim(),
     check("price", "please add a valid price.").isFloat().notEmpty(),
-    check("imageUrl", "please add a valid URL.").isURL().notEmpty().trim(),
   ],
   isAuth,
   adminController.postAddProducts
@@ -38,7 +37,6 @@ router.post(
       .isLength({ min: 5, max: 400 })
       .trim(),
     check("price", "please add a valid price.").isFloat().notEmpty(),
-    check("imageUrl", "please add a valid URL.").isURL().trim(),
   ],
   isAuth,
   adminController.postEditProduct
