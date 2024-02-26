@@ -186,9 +186,13 @@ exports.deleteProduct = (req, res, next) => {
       file.deleteFile(product.imageUrl);
       return Product.deleteOne({ _id: prodId, userId: req.user._id });
     })
+
     .then((product) => {
       res.status(200).json({ message: "Deleted Successfully!" });
       console.log("delete success");
+    })
+    .then((result) => {
+      return req.user.clearUserCart(prodId);
     })
     .catch((err) => {
       res.status(500).json({ message: "Deleting product failed!" });
