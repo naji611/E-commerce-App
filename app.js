@@ -91,6 +91,7 @@ app.use(authRouts);
 app.get("/500", errorRouts.errorPage500);
 app.use(errorRouts.errorPage404);
 app.use((error, req, res, next) => {
+  console.log(error);
   res.status(500).render("500", {
     pageTitle: "Error!",
     path: "/500",

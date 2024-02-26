@@ -177,7 +177,7 @@ exports.getProducts = (req, res, next) => {
     });
 };
 exports.deleteProduct = (req, res, next) => {
-  const prodId = req.body.productId;
+  const prodId = req.params.productId;
   Product.findById(prodId)
     .then((product) => {
       if (!product) {
@@ -187,12 +187,10 @@ exports.deleteProduct = (req, res, next) => {
       return Product.deleteOne({ _id: prodId, userId: req.user._id });
     })
     .then((product) => {
+      res.status(200).json({ message: "Deleted Successfully!" });
       console.log("delete success");
-      res.redirect("/admin/products");
     })
     .catch((err) => {
-      const error = new Error(err);
-      error.httpStatusCode = 500;
-      return next(error);
+      res.status(500).json({ message: "Deleting product failed!" });
     });
 };
