@@ -1,0 +1,9 @@
+{
+    "env": {
+        "MONGO_USER": "najiassi13",
+        "MONGO_PASSWORD": "naji3123",
+        "MONGO_DATABASE": "shop",
+        "STRIPE_KEY":  "sk_test_51Oo3MuB2VLyyIywloAX6TmTJFgmNg4jcFOvy0SYF4wKZwrSuac6UdjYl1N0dIPgduousJxo7nj4QEQlPzoFQ5EWX00SQuskUnH",
+        "PORT":"3000"
+    }
+}

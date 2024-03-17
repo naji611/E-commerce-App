@@ -1,4 +1,7 @@
 const express = require("express");
+const fs = require("fs");
+const https = require("https");
+
 const mongoose = require("mongoose");
 const adminRouts = require("./routes/admin");
 const shopRouts = require("./routes/shop");
@@ -13,13 +16,16 @@ const session = require("express-session");
 const MongoDbStore = require("connect-mongodb-session")(session);
 //const MONGODB_URI=
 const User = require("./models/user");
+const helmet = require("helmet");
+
+const compression = require("compression");
+const compressible = require("compressible");
 const app = express();
 
 const store = new MongoDbStore({
-  uri: "mongodb+srv://najiassi13:naji3123@cluster0.lfudb4r.mongodb.net/shop?retryWrites=true&w=majority",
-  collection: "sessions",
+  uri: `mongodb+srv://${process.env.MONGO_USER}:${process.env.MONGO_PASSWORD}@cluster0.lfudb4r.mongodb.net/${process.env.MONGO_DATABASE}?retryWrites=true&w=majority`,
 });
-
+console.log(process.env.MONGO_DATABASE);
 const csrfProtection = Csrf();
 
 const fileStorage = multer.diskStorage({
@@ -44,6 +50,11 @@ fileFilter = (req, file, cb) => {
 app.set("view engine", "ejs");
 app.set("views", "views");
 
+app.use(helmet());
+app.use(compression());
+
+console.log(compressible("text/html"));
+
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use("/images", express.static(path.join(__dirname, "images")));
@@ -60,6 +71,10 @@ app.use(
 ); //secret key for encrypting
 
 app.use(csrfProtection);
+
+const privateKey = fs.readFileSync("server.key");
+const certificate = fs.readFileSync("server.cert");
+
 app.use(flash());
 
 app.use((req, res, next) => {
@@ -98,12 +113,14 @@ app.use((error, req, res, next) => {
     isAuthenticated: req.session.isLoggedIn,
   });
 });
+
 mongoose
   .connect(
     "mongodb+srv://najiassi13:naji3123@cluster0.lfudb4r.mongodb.net/shop?retryWrites=true&w=majority"
   )
   .then((results) => {
-    app.listen(3000);
+    //https.createServer({ key: privateKey, cert: certificate }, app)
+    app.listen(process.env.PORT || 3000);
   })
   .catch((err) => {
     console.log(err);

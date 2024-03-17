@@ -4,9 +4,7 @@ const isAuth = require("../middleware/is-auth");
 const fs = require("fs");
 const path = require("path");
 const PDFDocument = require("pdfkit");
-const stripe = require("stripe")(
-  "sk_test_51Oo3MuB2VLyyIywloAX6TmTJFgmNg4jcFOvy0SYF4wKZwrSuac6UdjYl1N0dIPgduousJxo7nj4QEQlPzoFQ5EWX00SQuskUnH"
-);
+const stripe = require("stripe")(`${process.env.STRIPE_KEY}`);
 const ITEMS_PER_PAGE = 1;
 exports.getCart = (req, res, next) => {
   req.user
