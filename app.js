@@ -116,7 +116,7 @@ app.use((error, req, res, next) => {
 
 mongoose
   .connect(
-    "mongodb+srv://najiassi13:naji3123@cluster0.lfudb4r.mongodb.net/shop?retryWrites=true&w=majority"
+    "mongodb+srv://************************************************"
   )
   .then((results) => {
     //https.createServer({ key: privateKey, cert: certificate }, app)
